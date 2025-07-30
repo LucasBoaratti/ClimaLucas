@@ -1,11 +1,19 @@
 @import "tailwindcss";
 
+main {
+     background-image: url("../assets/Images/Background.png");
+     background-position: center;
+     background-repeat: no-repeat;
+     background-size: cover;
+     background-attachment: fixed;
+}
+
 .conteudoPrincipal {
-     @apply bg-gradient-to-r from-[#1E3A8A] via-[#3B82F6] to-[#93C5FD] text-white flex flex-col justify-center items-center min-h-screen;
+     @apply text-white flex flex-col justify-center items-center min-h-screen;
 }
 
 .dadosClimaticos {
-     @apply bg-gradient-to-r from-[#FCA5A5] via-[#EF4444] to-[#B91C1C] flex flex-col items-center text-white p-5 rounded-[25px] w-[300px] shadow-xl/50;
+     @apply bg-gradient-to-r from-[#f23232] via-[#ef8f8f] to-[#B91C1C] flex flex-col items-center text-white p-5 rounded-[25px] shadow-xl/50;
 }
 
 .titulo {
@@ -16,10 +24,42 @@
      @apply w-full h-[30px] bg-white rounded-[10px] border-2 border-black text-black text-[18px] pl-[4px] mb-[15px];
 }
 
+.temperaturaIcone {
+     @apply flex justify-center items-center text-[20px];
+}
+
+.sensacaoTermica {
+     @apply text-[20px] mb-[15px];
+}
+
+.descricao {
+     @apply text-[20px] mb-[15px];
+}
+
+.dataHora {
+     @apply text-[20px] mb-[15px];
+}
+
+.umidade {
+     @apply text-[20px] mb-[15px];
+}
+
+.velocidadeVento {
+     @apply text-[20px] mb-[15px];
+}
+
+.atualizacao {
+     @apply text-[20px] mb-[15px];
+}
+
+.erro {
+     @apply text-[20px] mt-[15px];
+}
+
 .botao {
      @apply bg-[#ffc300] cursor-pointer text-black p-1.5 rounded-[15px] text-[18px];
 }
 
-.temperaturaIcone {
-     @apply flex justify-center;
+.botao:hover {
+     @apply bg-[#7171e9] text-white transition-colors duration-400 ease-in-out;
 }
