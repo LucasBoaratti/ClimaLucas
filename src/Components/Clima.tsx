@@ -23,6 +23,24 @@ interface WeatherResponse { //Criando os caminhos da API, utilizando o interface
      };
 }
 
+interface Clima7dias {
+     datetime: string;
+     temp: number;
+     max_temp: number;
+     min_temp: number;
+     wind_spd: number;
+     rh: number;
+     
+     weather: {
+          description: string;
+          icon: string;
+     }
+}
+
+interface ResponseClima {
+     data: Clima7dias[];
+}
+
 export function Clima() {
      const [cidade, setCidade] = useState("");
      const [nomeCidade, setNomeCidade] = useState("");
@@ -36,6 +54,16 @@ export function Clima() {
      const [umidade, setUmidade] = useState <number | null>(null);
      const [ultimaAtualizacao, setUltimaAtualizacao] = useState("");
      const [erro, setErro] = useState("");
+
+     const [dataClima, setDataClima] = useState("");
+     const [temperaturaClima, setTemperaturaClima] = useState<number | null>(null);
+     const [temperaturaMaxima, setTemperaturaMaxima] = useState<number | null>(null);
+     const [temperaturaMinima, setTemperaturaMinima] = useState<number | null>(null);
+     const [velocidadeVento, setVelocidadeVento] = useState<number | null>(null);
+     const [umidadeAr, setUmidadeAr] = useState<number | null>(null);
+     const [descricaoClima, setDescricaoClima] = useState("");
+     const [iconeClima, setIconeClima] = useState("");
+     const [previsoes, setPrevisoes] = useState<Clima7dias[]>([]);
 
      async function get_clima() { //Criando uma função assíncrona para consumir a API via GET
           if (!cidade) { //Verificando se o usuário digitou uma cidade não existente
@@ -76,6 +104,38 @@ export function Clima() {
           }
      }
 
+     async function get_clima_em_sete_dias() {
+          const api_key = "fe3c0fab6c4242fdab879f0d7cc14d0f";
+          const url = `https://api.weatherbit.io/v2.0/forecast/daily?city=${cidade}&key=${api_key}&lang=pt`;
+
+          try {
+               const response = await axios.get<ResponseClima>(url);
+
+               const primeiroDia = response.data.data[0];
+
+               setDataClima(primeiroDia.datetime);
+               setPrevisoes(response.data.data);
+               setTemperaturaClima(primeiroDia.temp);
+               setTemperaturaMaxima(primeiroDia.max_temp);
+               setTemperaturaMinima(primeiroDia.min_temp);
+               setVelocidadeVento(primeiroDia.wind_spd);
+               setUmidadeAr(primeiroDia.rh);
+               setDescricaoClima(primeiroDia.weather.description);
+               setIconeClima(primeiroDia.weather.icon);
+               setErro("");
+          }
+          catch {
+               setErro("Não foi possível obter o clima em 7 dias.");
+               setDataClima("");
+               setTemperaturaClima(null);
+               setTemperaturaMaxima(null);
+               setTemperaturaMinima(null);
+               setVelocidadeVento(null);
+               setUmidadeAr(null);
+               setDescricaoClima("");  
+          }
+     }
+
      function formatar_data(date: string): string { //Função formatada para ser exibida no estilo: DD/MM/AAAA
           const [dataAtual, horaAtual] = date.split(" "); 
           const [ano, mes, dia] = dataAtual.split("-").map(Number);
@@ -93,6 +153,18 @@ export function Clima() {
           return `${diaFusoHorario}/${mesFusoHorario}/${anoFusoHorario} ${horas}:${minutos}`; //Retornando a data e hora formatadas para mostrar ao usuário
      }
 
+     function data_simples(date: string): string {
+          const [ano, mes, dia] = date.split("-").map(Number);
+
+          const data = new Date(ano, mes - 1, dia);
+
+          const dias = String(data.getDate()).padStart(2, "0");
+          const meses = String(data.getMonth() + 1).padStart(2, "0");
+          const anos = data.getFullYear();
+
+          return `${dias}/${meses}/${anos}`;
+     }
+
      function horas(horario: string): string { //Função para formatar as horas no formata HH:MM
           const horaTotal = new Date(horario);
 
@@ -105,6 +177,7 @@ export function Clima() {
      function clique(e: React.KeyboardEvent<HTMLInputElement>) { //Função de clique para quando o usuário digitar o nome da cidade e clicar enter, mesmo dentro do input
           if (e.key === "Enter") { //Verificando se o usuário clicou na tecla enter no teclado
                get_clima();
+               get_clima_em_sete_dias();
           }
      }
      
@@ -125,7 +198,14 @@ export function Clima() {
                          onKeyDown={clique} 
                          className={css.input}/>
 
-                    <button type="button" onClick={get_clima} className={css.botao}>Buscar</button>
+                    <button 
+                         type="button"  
+                         onClick={() => {
+                              get_clima();
+                              get_clima_em_sete_dias();}} 
+                         className={css.botao}>
+                         Buscar
+                    </button>
 
                     {/* Exibindo a temperatura, o nome da cidade e o ícone do tempo da cidade */}
                     {temperatura !== null && (
@@ -169,6 +249,23 @@ export function Clima() {
                     {erro && 
                          <p className={css.erro}>{erro}</p>
                     }
+               </section>
+               <section>
+                    <h2>Previsões para os próximos 7 dias</h2>
+                    {previsoes.length > 0 ? (
+                         previsoes.map((dia, index) => (
+                              <div key={index}>
+                                   <p>{data_simples(dia.datetime)}</p>
+                                   <img src={`https://www.weatherbit.io/static/img/icons/${dia.weather.icon}.png`} alt="Ícone do clima."/>
+                                   <p>{dia.temp}</p>
+                                   <p>{dia.max_temp}</p>
+                                   <p>{dia.min_temp}</p>
+                                   <p>{dia.wind_spd}</p>
+                                   <p>{dia.rh}</p>
+                                   <p>{dia.weather.description}</p>
+                              </div>
+                         ))
+                    ): null}
                </section>
           </main>
      );
