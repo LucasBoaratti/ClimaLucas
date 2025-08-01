@@ -201,21 +201,21 @@ export function Clima() {
                     dadosClima: "bg-purple-800",
                };
           }
-          if (descricaoClima.includes("nublado") || descricaoClima.includes("parcialmente nublado") || descricaoClima.includes("céu encoberto")) {
+          if (descricaoClima.includes("nublado") || descricaoClima.includes("parcialmente nublado") || descricaoClima.includes("céu encoberto") || descricaoClima.includes("encoberto")) {
                return {
                     bg: "bg-gradient-to-br from-[#f0f4f8] to-[#e2e8f0]",
                     text: "text-gray-700",
                     dadosClima: "bg-blue-900",
                };
           }
-          if (descricaoClima.includes("chuva") || descricaoClima.includes("garoa") || descricaoClima.includes("tempestade") || descricaoClima.includes("trovoada") || descricaoClima.includes("chuva fraca")) {
+          if (descricaoClima.includes("chuva") || descricaoClima.includes("garoa") || descricaoClima.includes("tempestade") || descricaoClima.includes("trovoada") || descricaoClima.includes("chuva fraca") || descricaoClima.includes("possibilidade de chuva irregular") || descricaoClima.includes("possibilidade de chuvisco gelado irregular")) {
                return {
                     bg: "bg-gradient-to-br from-[#a0c4ff] to-[#5d9cec]",
                     text: "text-[#eef2f7]",
                     dadosClima: "bg-gray-800",
                };
           }
-          if (descricaoClima.includes("neve") || descricaoClima.includes("nevasca") || descricaoClima.includes("neblina")) {
+          if (descricaoClima.includes("neve") || descricaoClima.includes("nevasca") || descricaoClima.includes("neblina") || descricaoClima.includes("possibilidade de neve irregular") || descricaoClima.includes("possibilidade de neve molhada irregular")) {
                return {
                     bg: "bg-gradient-to-br from-[#ffffff] to-[#d8e7f5]",
                     text: "text-[#2f4f8c]",
@@ -231,7 +231,7 @@ export function Clima() {
      }
      
      return (
-          <main className={`${css.conteudoPrincipal} ${bg} ${text} bg-cover bg-center bg-no-repeat bg-fixed`}>
+          <main className={`${css.conteudoPrincipal} ${bg} ${text}`}>
                <section className={`${css.dadosClimaticos} ${dadosClima}`}>
                     <div className="hidden">
                          bg-[#252525] bg-purple-800 bg-blue-900 bg-gray-800 bg-[#103b66] bg-gray-100
@@ -304,7 +304,7 @@ export function Clima() {
                     }
 
                     <section className={css.previsoes}>
-                         {previsoes.length > 0 ? (
+                         {previsoes.length > 0 && !erroClima ? (
                               <>
                                    <h2>Previsão do tempo de 7 dias em {nomeCidade}</h2>
                                    <section className={css.previsoes7dias}>                                 
