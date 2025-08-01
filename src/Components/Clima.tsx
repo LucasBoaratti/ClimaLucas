@@ -64,6 +64,8 @@ export function Clima() {
      const [descricaoClima, setDescricaoClima] = useState("");
      const [iconeClima, setIconeClima] = useState("");
      const [previsoes, setPrevisoes] = useState<Clima7dias[]>([]);
+     const [erroClima, setErroClima] = useState("");
+     const { bg, text, dadosClima } = tema_fundo(descricao);
 
      async function get_clima() { //Criando uma função assíncrona para consumir a API via GET
           if (!cidade) { //Verificando se o usuário digitou uma cidade não existente
@@ -106,26 +108,26 @@ export function Clima() {
 
      async function get_clima_em_sete_dias() {
           const api_key = "fe3c0fab6c4242fdab879f0d7cc14d0f";
-          const url = `https://api.weatherbit.io/v2.0/forecast/daily?city=${cidade}&key=${api_key}&lang=pt`;
+          const url = `https://api.weatherbit.io/v2.0/forecast/daily?city=${cidade}&key=${api_key}&lang=pt&days=7`;
 
           try {
                const response = await axios.get<ResponseClima>(url);
 
-               const primeiroDia = response.data.data[0];
+               const dias = response.data.data[0];
 
-               setDataClima(primeiroDia.datetime);
+               setDataClima(dias.datetime);
                setPrevisoes(response.data.data);
-               setTemperaturaClima(primeiroDia.temp);
-               setTemperaturaMaxima(primeiroDia.max_temp);
-               setTemperaturaMinima(primeiroDia.min_temp);
-               setVelocidadeVento(primeiroDia.wind_spd);
-               setUmidadeAr(primeiroDia.rh);
-               setDescricaoClima(primeiroDia.weather.description);
-               setIconeClima(primeiroDia.weather.icon);
-               setErro("");
+               setTemperaturaClima(dias.temp);
+               setTemperaturaMaxima(dias.max_temp);
+               setTemperaturaMinima(dias.min_temp);
+               setVelocidadeVento(dias.wind_spd);
+               setUmidadeAr(dias.rh);
+               setDescricaoClima(dias.weather.description);
+               setIconeClima(dias.weather.icon);
+               setErroClima("");
           }
           catch {
-               setErro("Não foi possível obter o clima em 7 dias.");
+               setErroClima("Não foi possível obter o clima em 7 dias.");
                setDataClima("");
                setTemperaturaClima(null);
                setTemperaturaMaxima(null);
@@ -180,10 +182,61 @@ export function Clima() {
                get_clima_em_sete_dias();
           }
      }
+
+     function tema_fundo(descricao: string | undefined) {
+          if (!descricao) {
+               return {
+                    bg: "bg-[url('./src/assets/Images/Background.png')]",
+                    text: "text-white",
+                    dadosClima: "bg-green-900",
+               };
+          }
+
+          const descricaoClima = descricao.toLowerCase();
+
+          if (descricaoClima.includes("sol") || descricaoClima.includes("ensolarado") || descricaoClima.includes("céu limpo")) {
+               return {
+                    bg: "bg-gradient-to-br from-[#fff587] to-[#f9d423]",
+                    text: "text-gray-900",
+                    dadosClima: "bg-purple-800",
+               };
+          }
+          if (descricaoClima.includes("nublado") || descricaoClima.includes("parcialmente nublado") || descricaoClima.includes("céu encoberto")) {
+               return {
+                    bg: "bg-gradient-to-br from-[#f0f4f8] to-[#e2e8f0]",
+                    text: "text-gray-700",
+                    dadosClima: "bg-blue-900",
+               };
+          }
+          if (descricaoClima.includes("chuva") || descricaoClima.includes("garoa") || descricaoClima.includes("tempestade") || descricaoClima.includes("trovoada") || descricaoClima.includes("chuva fraca")) {
+               return {
+                    bg: "bg-gradient-to-br from-[#a0c4ff] to-[#5d9cec]",
+                    text: "text-[#eef2f7]",
+                    dadosClima: "bg-gray-800",
+               };
+          }
+          if (descricaoClima.includes("neve") || descricaoClima.includes("nevasca") || descricaoClima.includes("neblina")) {
+               return {
+                    bg: "bg-gradient-to-br from-[#ffffff] to-[#d8e7f5]",
+                    text: "text-[#2f4f8c]",
+                    dadosClima: "bg-[#103b66]",
+               };
+          }
+
+          return {
+               bg: "bg-[url('./src/assets/Images/Background.png')]",
+               text: "text-white",
+               dadosClima: "bg-red-300",
+          };
+     }
      
      return (
-          <main className={css.conteudoPrincipal}>
-               <section className={css.dadosClimaticos}>
+          <main className={`${css.conteudoPrincipal} ${bg} ${text} bg-cover bg-center bg-no-repeat bg-fixed`}>
+               <section className={`${css.dadosClimaticos} ${dadosClima}`}>
+                    <div className="hidden">
+                         bg-[#252525] bg-purple-800 bg-blue-900 bg-gray-800 bg-[#103b66] bg-gray-100
+                    </div>
+
                     <h1 className={css.titulo}>ClimaLucas</h1>
 
                     <input 
@@ -211,13 +264,13 @@ export function Clima() {
                     {temperatura !== null && (
                          <div className={css.temperaturaIcone}> 
                               {icone && <img src={icone} alt="Ícone do tempo."/>}
-                              <p>{nomeCidade}, {pais}: {temperatura} °C</p>
+                              <p>{nomeCidade}, {pais}: {temperatura}°C</p>
                               {icone && <img src={icone} alt="Ícone do tempo."/>}
                     </div>)}
 
                     {/* Exibindo a sensação térmica */}
                     {sensacaoTermica && 
-                         <p className={css.sensacaoTermica}>Sensação térmica: {sensacaoTermica} °C</p>
+                         <p className={css.sensacaoTermica}>Sensação térmica: {sensacaoTermica}°C</p>
                     }
 
                     {/* Exibindo a descrição do clima */}
@@ -249,23 +302,28 @@ export function Clima() {
                     {erro && 
                          <p className={css.erro}>{erro}</p>
                     }
-               </section>
-               <section>
-                    <h2>Previsões para os próximos 7 dias</h2>
-                    {previsoes.length > 0 ? (
-                         previsoes.map((dia, index) => (
-                              <div key={index}>
-                                   <p>{data_simples(dia.datetime)}</p>
-                                   <img src={`https://www.weatherbit.io/static/img/icons/${dia.weather.icon}.png`} alt="Ícone do clima."/>
-                                   <p>{dia.temp}</p>
-                                   <p>{dia.max_temp}</p>
-                                   <p>{dia.min_temp}</p>
-                                   <p>{dia.wind_spd}</p>
-                                   <p>{dia.rh}</p>
-                                   <p>{dia.weather.description}</p>
-                              </div>
-                         ))
-                    ): null}
+
+                    <section className={css.previsoes}>
+                         {previsoes.length > 0 ? (
+                              <>
+                                   <h2>Previsão do tempo de 7 dias em {nomeCidade}</h2>
+                                   <section className={css.previsoes7dias}>                                 
+                                        {previsoes.map((dia, index) => (
+                                             <div key={index} className={css.dias}>
+                                                  <p>Dia: {data_simples(dia.datetime)}</p>
+                                                  <img src={`https://www.weatherbit.io/static/img/icons/${dia.weather.icon}.png`} alt="Ícone do clima."/>
+                                                  <p>Descrição: {dia.weather.description}</p>
+                                                  <p>Temperatura: {dia.temp}°C</p>
+                                                  <p>Temperatura máxima: {dia.max_temp}°C</p>
+                                                  <p>Temperatura mínima: {dia.min_temp}°C</p>
+                                                  <p>Velocidade do vento: {dia.wind_spd}km/h</p>
+                                                  <p>Umidade: {dia.rh}%</p>
+                                             </div>
+                                        ))}
+                                   </section>
+                              </>
+                         ) : null}
+                    </section>
                </section>
           </main>
      );
