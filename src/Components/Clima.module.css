@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 main {
-     @apply min-h-screen transition-all duration-500;
+     @apply min-h-screen bg-cover bg-center bg-no-repeat bg-fixed;
 }
 
 .conteudoPrincipal {
@@ -9,7 +9,7 @@ main {
 }
 
 .dadosClimaticos {
-     @apply flex flex-col items-center p-5 rounded-[25px] shadow-xl/50 my-[40px];
+     @apply flex flex-col items-center p-5 rounded-[25px] shadow-xl/50 my-[40px] mx-[30px] opacity-90;
 }
 
 .titulo {
@@ -17,7 +17,11 @@ main {
 }
 
 .input {
-     @apply w-[230px] h-[30px] bg-white rounded-[10px] border-2 border-black text-black text-[18px] pl-[4px] mb-[15px];
+     @apply flex justify-center items-center;
+}
+
+.input input {
+     @apply w-[250px] h-[30px] bg-white rounded-[10px] border-2 border-black text-black text-[18px] pl-[4px];
 }
 
 .temperaturaIcone {
@@ -53,10 +57,14 @@ main {
 }
 
 .botao {
-     @apply bg-[#ffc300] cursor-pointer text-black p-1.5 rounded-[15px] text-[18px];
+     @apply text-black flex justify-center items-center;
 }
 
-.botao:hover {
+.botao button {
+     @apply bg-[#ffc300] cursor-pointer p-1.5 rounded-[15px] text-[18px];
+}
+
+.botao button:hover {
      @apply bg-[#7171e9] text-white transition-colors duration-400 ease-in-out;
 }
 
@@ -64,8 +72,8 @@ main {
      @apply flex flex-col justify-between items-center;
 }
 
-.previsoes h2 {
-     @apply text-[30px] mb-[20px];
+.previsoesClimas h2 {
+     @apply text-[30px] mb-[20px] text-center;
 }
 
 .previsoes7dias {

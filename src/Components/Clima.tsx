@@ -1,8 +1,20 @@
+//Importações
 import React, { useState } from "react";
 import axios from "axios";
 import css from "./Clima.module.css";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 
-interface WeatherResponse { //Criando os caminhos da API, utilizando o interface
+//Criando as validações para o campo da cidade
+const validacaoInput = z.object({ 
+     cidadeInput: z.string()
+          .min(1, "Digite o nome de uma cidade, por favor.")
+          .max(30, "O nome da cidade não pode ter mais de 30 caracteres."),
+});
+
+//Interface que contém cada objeto da API da WeatherAPI
+interface WeatherResponse { 
      location: {
           name: string; 
           country: string; 
@@ -23,7 +35,8 @@ interface WeatherResponse { //Criando os caminhos da API, utilizando o interface
      };
 }
 
-interface Clima7dias {
+//Interface que contém cada objeto da API da Weatherbit
+interface Clima7dias { 
      datetime: string;
      temp: number;
      max_temp: number;
@@ -37,11 +50,13 @@ interface Clima7dias {
      }
 }
 
+//Interface que possui um wrapper que contém um array da interface Clima7dias
 interface ResponseClima {
      data: Clima7dias[];
 }
 
 export function Clima() {
+     //Armazenando os dados da WeatherAPI em useStates
      const [cidade, setCidade] = useState("");
      const [nomeCidade, setNomeCidade] = useState("");
      const [temperatura, setTemperatura] = useState <number | null>(null);
@@ -55,6 +70,7 @@ export function Clima() {
      const [ultimaAtualizacao, setUltimaAtualizacao] = useState("");
      const [erro, setErro] = useState("");
 
+     //Armazenando os dados da API da Weatherbit em useStates
      const [dataClima, setDataClima] = useState("");
      const [temperaturaClima, setTemperaturaClima] = useState<number | null>(null);
      const [temperaturaMaxima, setTemperaturaMaxima] = useState<number | null>(null);
@@ -67,18 +83,27 @@ export function Clima() {
      const [erroClima, setErroClima] = useState("");
      const { bg, text, dadosClima } = tema_fundo(descricao);
 
-     async function get_clima() { //Criando uma função assíncrona para consumir a API via GET
-          if (!cidade) { //Verificando se o usuário digitou uma cidade não existente
+     const { //Integrando o zod com o formulário (input de cidade)
+          register,
+          handleSubmit,
+          formState: { errors, touchedFields }
+     } = useForm({
+          resolver: zodResolver(validacaoInput),
+     });
+
+     //Função assíncrona que busca o clima atual da cidade digitada pelo usuário
+     async function get_clima() { 
+          if (!cidade) {  //Verificando se o usuário não digitou o nome da cidade
                return;
           }
 
           try {
-               const api_key = "6e59ace25c0a4dfebac162548252907"; //Chace da API
+               const api_key = "6e59ace25c0a4dfebac162548252907"; //Chave da API
                const url = `https://api.weatherapi.com/v1/current.json?key=${api_key}&q=${cidade}&lang=pt`; //URL da API
 
                const response = await axios.get<WeatherResponse>(url); //Adicionando a URL da API para realizar as buscas dos campos
 
-               //Buscando e mostrando os dados pro usuário
+               //Popula os estados com os dados retornados
                setTemperatura(response.data.current.temp_c);
                setNomeCidade(response.data.location.name);
                setIcone(response.data.current.condition.icon);
@@ -91,7 +116,7 @@ export function Clima() {
                setUltimaAtualizacao(response.data.current.last_updated);
                setErro("");
           }
-          catch { //Caso a cidade não seja encontrada
+          catch { //Limpa os estados e mostra o erro se a cidade não existir
                setErro("Cidade não encontrada.");
                setTemperatura(null);
                setNomeCidade("");
@@ -106,6 +131,7 @@ export function Clima() {
           }
      }
 
+     //Função assíncrona que busca o clima para os próximos 7 dias
      async function get_clima_em_sete_dias() {
           const api_key = "fe3c0fab6c4242fdab879f0d7cc14d0f";
           const url = `https://api.weatherbit.io/v2.0/forecast/daily?city=${cidade}&key=${api_key}&lang=pt&days=7`;
@@ -115,6 +141,7 @@ export function Clima() {
 
                const dias = response.data.data[0];
 
+               //Definindo os dados de 7 dias em cada estado
                setDataClima(dias.datetime);
                setPrevisoes(response.data.data);
                setTemperaturaClima(dias.temp);
@@ -138,7 +165,8 @@ export function Clima() {
           }
      }
 
-     function formatar_data(date: string): string { //Função formatada para ser exibida no estilo: DD/MM/AAAA
+     //Função que formata a data e a hora para serem exibidas no estilo: DD/MM/AAAA HH:MM
+     function formatar_data(date: string): string { 
           const [dataAtual, horaAtual] = date.split(" "); 
           const [ano, mes, dia] = dataAtual.split("-").map(Number);
           const [hora, minuto] = horaAtual.split(":").map(Number);
@@ -152,9 +180,10 @@ export function Clima() {
           const horas = String(data.getHours()).padStart(2, "0");
           const minutos = String(data.getMinutes()).padStart(2, "0");
 
-          return `${diaFusoHorario}/${mesFusoHorario}/${anoFusoHorario} ${horas}:${minutos}`; //Retornando a data e hora formatadas para mostrar ao usuário
+          return `${diaFusoHorario}/${mesFusoHorario}/${anoFusoHorario} ${horas}:${minutos}`; 
      }
 
+     //Função que formata a data para o estilo padrão: DD/MM/AAAA 
      function data_simples(date: string): string {
           const [ano, mes, dia] = date.split("-").map(Number);
 
@@ -167,28 +196,31 @@ export function Clima() {
           return `${dias}/${meses}/${anos}`;
      }
 
-     function horas(horario: string): string { //Função para formatar as horas no formata HH:MM
+     //Função que formata as horas para o padrão HH:MM
+     function horas(horario: string): string {
           const horaTotal = new Date(horario);
 
           const hora = String(horaTotal.getHours()).padStart(2, "0");
           const minuto = String(horaTotal.getMinutes()).padStart(2, "0");
 
-          return `${hora}:${minuto}`; //Retornando as horas e os minutos para mostrar pro usuário
+          return `${hora}:${minuto}`; 
      }
 
-     function clique(e: React.KeyboardEvent<HTMLInputElement>) { //Função de clique para quando o usuário digitar o nome da cidade e clicar enter, mesmo dentro do input
-          if (e.key === "Enter") { //Verificando se o usuário clicou na tecla enter no teclado
+     //Função que permite o usuário enviar a cidade apenas pressionando enter no campo
+     function clique(e: React.KeyboardEvent<HTMLInputElement>) { 
+          if (e.key === "Enter") { 
                get_clima();
                get_clima_em_sete_dias();
           }
      }
 
+     //Função que define o tema de fundo de acordo com o clima local
      function tema_fundo(descricao: string | undefined) {
           if (!descricao) {
                return {
-                    bg: "bg-[url('./src/assets/Images/Background.png')]",
-                    text: "text-white",
-                    dadosClima: "bg-green-900",
+                    bg: "bg-[url('./src/assets/Images/Background.png')]", //Fundo do site
+                    text: "text-white", //Texto do componente
+                    dadosClima: "bg-green-900", //Cor do componente
                };
           }
 
@@ -196,28 +228,28 @@ export function Clima() {
 
           if (descricaoClima.includes("sol") || descricaoClima.includes("ensolarado") || descricaoClima.includes("céu limpo")) {
                return {
-                    bg: "bg-gradient-to-br from-[#fff587] to-[#f9d423]",
+                    bg: "bg-[url('./src/assets/Images/Foto_Ensolarada.jpg')]",
                     text: "text-gray-900",
                     dadosClima: "bg-purple-800",
                };
           }
           if (descricaoClima.includes("nublado") || descricaoClima.includes("parcialmente nublado") || descricaoClima.includes("céu encoberto") || descricaoClima.includes("encoberto")) {
                return {
-                    bg: "bg-gradient-to-br from-[#f0f4f8] to-[#e2e8f0]",
+                    bg: "bg-[url('./src/assets/Images/Foto_Nublada.jpg')]",
                     text: "text-gray-700",
                     dadosClima: "bg-blue-900",
                };
           }
           if (descricaoClima.includes("chuva") || descricaoClima.includes("garoa") || descricaoClima.includes("tempestade") || descricaoClima.includes("trovoada") || descricaoClima.includes("chuva fraca") || descricaoClima.includes("possibilidade de chuva irregular") || descricaoClima.includes("possibilidade de chuvisco gelado irregular")) {
                return {
-                    bg: "bg-gradient-to-br from-[#a0c4ff] to-[#5d9cec]",
+                    bg: "bg-[url('./src/assets/Images/Foto_Chuvosa.jpg')]",
                     text: "text-[#eef2f7]",
                     dadosClima: "bg-gray-800",
                };
           }
           if (descricaoClima.includes("neve") || descricaoClima.includes("nevasca") || descricaoClima.includes("neblina") || descricaoClima.includes("possibilidade de neve irregular") || descricaoClima.includes("possibilidade de neve molhada irregular")) {
                return {
-                    bg: "bg-gradient-to-br from-[#ffffff] to-[#d8e7f5]",
+                    bg: "bg-[url('./src/assets/Images/Foto_Neve.jpg')]",
                     text: "text-[#2f4f8c]",
                     dadosClima: "bg-[#103b66]",
                };
@@ -233,32 +265,32 @@ export function Clima() {
      return (
           <main className={`${css.conteudoPrincipal} ${bg} ${text}`}>
                <section className={`${css.dadosClimaticos} ${dadosClima}`}>
-                    <div className="hidden">
-                         bg-[#252525] bg-purple-800 bg-blue-900 bg-gray-800 bg-[#103b66] bg-gray-100
-                    </div>
-
                     <h1 className={css.titulo}>ClimaLucas</h1>
 
-                    <input 
-                         type="text" 
-                         placeholder="Digite o nome da cidade" 
-                         value={cidade} 
-                         onChange={(e) => {
-                              const letras = e.target.value;
-                              const letrasEspacos = letras.replace(/[^A-Za-zÀ-ÿ\s]/g, "");
-                              setCidade(letrasEspacos);
-                         }} 
-                         onKeyDown={clique} 
-                         className={css.input}/>
-
-                    <button 
-                         type="button"  
-                         onClick={() => {
-                              get_clima();
-                              get_clima_em_sete_dias();}} 
-                         className={css.botao}>
-                         Buscar
-                    </button>
+                    <form onSubmit={handleSubmit(() => {
+                         get_clima(); 
+                         get_clima_em_sete_dias();
+                    })}>
+                         <div className={css.input}>
+                         <input 
+                              type="text" 
+                              placeholder="Digite o nome da cidade" 
+                              value={cidade} 
+                              onKeyDown={clique}
+                              maxLength={30}
+                              {...register("cidadeInput")}
+                              onChange={(e) => {
+                                   const letras = e.target.value;
+                                   const letrasEspacos = letras.replace(/[^A-Za-zÀ-ÿ\s]/g, "");
+                                   setCidade(letrasEspacos);
+                              }}/> 
+                         </div> <br />
+                              {errors.cidadeInput && touchedFields.cidadeInput && <p style={{ marginBottom:"15px", fontSize:"18px" }}>{errors.cidadeInput.message}</p>}
+                         
+                         <div className={css.botao}>
+                              <button type="submit">Buscar</button>
+                         </div>
+                    </form>
 
                     {/* Exibindo a temperatura, o nome da cidade e o ícone do tempo da cidade */}
                     {temperatura !== null && (
@@ -305,7 +337,7 @@ export function Clima() {
 
                     <section className={css.previsoes}>
                          {previsoes.length > 0 && !erroClima ? (
-                              <>
+                              <section className={css.previsoesClimas}>
                                    <h2>Previsão do tempo de 7 dias em {nomeCidade}</h2>
                                    <section className={css.previsoes7dias}>                                 
                                         {previsoes.map((dia, index) => (
@@ -321,7 +353,7 @@ export function Clima() {
                                              </div>
                                         ))}
                                    </section>
-                              </>
+                              </section>
                          ) : null}
                     </section>
                </section>
