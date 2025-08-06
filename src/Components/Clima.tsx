@@ -247,7 +247,7 @@ export function Clima() {
                     dadosClima: "bg-gray-800",
                };
           }
-          if (descricaoClima.includes("neve") || descricaoClima.includes("nevasca") || descricaoClima.includes("neblina") || descricaoClima.includes("possibilidade de neve irregular") || descricaoClima.includes("possibilidade de neve molhada irregular")) {
+          if (descricaoClima.includes("neve") || descricaoClima.includes("nevasca") || descricaoClima.includes("neblina") || descricaoClima.includes("possibilidade de neve irregular") || descricaoClima.includes("possibilidade de neve molhada irregular") || descricaoClima.includes("nevoeiro")) {
                return {
                     bg: "bg-[url('./src/assets/Images/Foto_Neve.jpg')]",
                     text: "text-[#2f4f8c]",
@@ -258,7 +258,7 @@ export function Clima() {
           return {
                bg: "bg-[url('./src/assets/Images/Background.png')]",
                text: "text-white",
-               dadosClima: "bg-red-300",
+               dadosClima: "bg-red-800",
           };
      }
      
